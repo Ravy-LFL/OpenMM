@@ -239,7 +239,7 @@ if __name__ == "__main__" :
     SIMULATION = minimization_step(SIMULATION)
     SIMULATION = NVT_equilibration(SIMULATION,INTEGRATOR)
     SIMULATION, SYSTEM = NPT_equilibration(SIMULATION, INTEGRATOR, SYSTEM)
-    #SIMULATION = classic_md(SIMULATION,INTEGRATOR)
+    SIMULATION = classic_md(SIMULATION,INTEGRATOR)
     SIMULATION = accelerated_md(SIMULATION, INTEGRATOR)
 
     print("######### MD IS DONE #########")
