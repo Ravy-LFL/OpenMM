@@ -67,7 +67,7 @@ def setup_system(PDB_FILE : str) :
     #  Add the integration methods.
     integrator.addIntegrator(LangevinMiddleIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds))
     integrator.addIntegrator(VerletIntegrator(0.002*picosecond))
-    integrator.addIntegrator(AMDIntegrator(0.001*picosecond,8,-1000*kilojoule_per_mole))
+    integrator.addIntegrator(AMDIntegrator(0.001*picosecond,8,-1600*kilojoule_per_mole))
     
     print("Define simulation system...")
     #  Define the simulation object.
@@ -165,6 +165,9 @@ def NPT_equilibration(SIMULATION, INTEGRATOR, SYSTEM) :
     #  Run NPT.
     print("Running NPT...")
     SIMULATION.step(50000)
+
+    #  Reinitialize to save modifications.
+    SIMULATION.context.reinitialize(preserveState=True)
     
     return (SIMULATION, SYSTEM)
 
@@ -191,14 +194,11 @@ def classic_md(SIMULATION,INTEGRATOR) :
     #  Write the trajectory.
     SIMULATION.reporters.append(DCDReporter("md_0_1.dcd",100))
     
-    #  Reinitialize to save modifications.
-    SIMULATION.context.reinitialize(preserveState=True)
-    
     #  Set the right integrator.
     INTEGRATOR.setCurrentIntegrator(1)
     
     #  Run the simulation.
-    SIMULATION.step(50000)
+    SIMULATION.step(100000)
     
     return SIMULATION
 
@@ -212,7 +212,7 @@ def accelerated_md(SIMULATION,INTEGRATOR) :
 
     #  Set the new reporters.
     print("Setting new reporters aMD...")
-    SIMULATION.reporters.append(PDBReporter('Amd_0_1.pdb', 10000))
+    SIMULATION.reporters.append(PDBReporter('Amd_0_1.pdb', 1000))
     
     #  Stdout output.
     SIMULATION.reporters.append(StateDataReporter(stdout, 1000, step=True,
@@ -229,7 +229,7 @@ def accelerated_md(SIMULATION,INTEGRATOR) :
     INTEGRATOR.setCurrentIntegrator(2)
     
     #  Run the simulation.
-    SIMULATION.step(50000)
+    SIMULATION.step(500000)
 
     return SIMULATION
 
@@ -239,7 +239,7 @@ if __name__ == "__main__" :
     SIMULATION = minimization_step(SIMULATION)
     SIMULATION = NVT_equilibration(SIMULATION,INTEGRATOR)
     SIMULATION, SYSTEM = NPT_equilibration(SIMULATION, INTEGRATOR, SYSTEM)
-    SIMULATION = classic_md(SIMULATION,INTEGRATOR)
+    #SIMULATION = classic_md(SIMULATION,INTEGRATOR)
     SIMULATION = accelerated_md(SIMULATION, INTEGRATOR)
 
     print("######### MD IS DONE #########")
