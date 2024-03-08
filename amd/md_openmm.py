@@ -111,8 +111,6 @@ def NVT_equilibration(SIMULATION, INTEGRATOR) :
     
     #  Set up reporters.
     print("Create reporters...")
-    ## Retrieve structures.
-    SIMULATION.reporters.append(PDBReporter('NVT.pdb', 10000))
     
     ## Print the data on terminal.
     SIMULATION.reporters.append(StateDataReporter(stdout, 1000, step=True,
@@ -148,8 +146,6 @@ def NPT_equilibration(SIMULATION, INTEGRATOR, SYSTEM) :
     
     #  Set new reporters.
     print("Set new reporters NPT...")
-    ##  New save of the structure.
-    SIMULATION.reporters.append(PDBReporter('NPT.pdb', 10000))
 
     #  stdout output.
     SIMULATION.reporters.append(StateDataReporter(stdout, 1000, step=True,
@@ -166,11 +162,12 @@ def NPT_equilibration(SIMULATION, INTEGRATOR, SYSTEM) :
     print("Running NPT...")
     SIMULATION.step(50000)
 
+    #  Write topology.
+    print("Write NPT PDB file...")
+    PDBFile.writeFile(SIMULATION.topology, SIMULATION.context.getState(getPositions=True).getPositions(), open('equilibrate.pdb','w'))
+
     #  Reinitialize to save modifications.
     SIMULATION.context.reinitialize(preserveState=True)
-    
-    #  Write topology.
-    PDBFile.writeFile(SIMULATION.topology, SYSTEM, open('equilibrate.pdb','w'))
 
     return (SIMULATION, SYSTEM)
 
@@ -184,7 +181,6 @@ def classic_md(SIMULATION,INTEGRATOR) :
     
     #  Set the new reporters.
     print("Setting new reporters cMD...")
-    SIMULATION.reporters.append(PDBReporter('md_0_1.pdb', 10000))
     
     #  Stdout output.
     SIMULATION.reporters.append(StateDataReporter(stdout, 1000, step=True,
@@ -215,7 +211,6 @@ def accelerated_md(SIMULATION,INTEGRATOR) :
 
     #  Set the new reporters.
     print("Setting new reporters aMD...")
-    SIMULATION.reporters.append(PDBReporter('Amd_0_1.pdb', 10000))
     
     #  Stdout output.
     SIMULATION.reporters.append(StateDataReporter(stdout, 1000, step=True,
