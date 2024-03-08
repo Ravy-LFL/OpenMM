@@ -66,8 +66,8 @@ def setup_system(PDB_FILE : str) :
     print("Add integrators...")
     #  Add the integration methods.
     integrator.addIntegrator(LangevinMiddleIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds))
-    integrator.addIntegrator(VerletIntegrator(0.002*picosecond))
-    integrator.addIntegrator(AMDIntegrator(0.001*picosecond,8,-1600*kilojoule_per_mole))
+    integrator.addIntegrator(VerletIntegrator(0.001*picosecond))
+    integrator.addIntegrator(AMDIntegrator(0.001*picosecond,10,-1600*kilojoule_per_mole))
     
     print("Define simulation system...")
     #  Define the simulation object.
@@ -169,6 +169,9 @@ def NPT_equilibration(SIMULATION, INTEGRATOR, SYSTEM) :
     #  Reinitialize to save modifications.
     SIMULATION.context.reinitialize(preserveState=True)
     
+    #  Write topology.
+    PDBFile.writeFile(SIMULATION.topology, SYSTEM, open('equilibrate.pdb','w'))
+
     return (SIMULATION, SYSTEM)
 
 def classic_md(SIMULATION,INTEGRATOR) :
@@ -198,7 +201,7 @@ def classic_md(SIMULATION,INTEGRATOR) :
     INTEGRATOR.setCurrentIntegrator(1)
     
     #  Run the simulation.
-    SIMULATION.step(100000)
+    SIMULATION.step(500000)
     
     return SIMULATION
 
@@ -212,7 +215,7 @@ def accelerated_md(SIMULATION,INTEGRATOR) :
 
     #  Set the new reporters.
     print("Setting new reporters aMD...")
-    SIMULATION.reporters.append(PDBReporter('Amd_0_1.pdb', 1000))
+    SIMULATION.reporters.append(PDBReporter('Amd_0_1.pdb', 10000))
     
     #  Stdout output.
     SIMULATION.reporters.append(StateDataReporter(stdout, 1000, step=True,
