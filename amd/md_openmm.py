@@ -47,13 +47,16 @@ def setup_system(PDB_FILE : str) :
     
     print("Define ForceField...")
     #  Define forcefield.
-    forcefield = ForceField("charmm36.xml", "charmm36/spce.xml")
+    forcefield = ForceField("charmm36.xml", "charmm36/tip4pew.xml")
     
     print("Define molecule...")
     #  Define molecule.
     modeller = Modeller(pdb.topology, pdb.positions)
     modeller.deleteWater()
     residues=modeller.addHydrogens(forcefield)
+
+    print("Add solvent...")
+    modeller.addSolvent(forcefield, padding=2.0*nanometer, model='tip4pew', ionicStrength=0.1*molar)
     
     print("Define system...")
     #  Define system.
@@ -65,9 +68,9 @@ def setup_system(PDB_FILE : str) :
     
     print("Add integrators...")
     #  Add the integration methods.
-    integrator.addIntegrator(LangevinMiddleIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds))
-    integrator.addIntegrator(VerletIntegrator(0.001*picosecond))
-    integrator.addIntegrator(AMDIntegrator(0.001*picosecond,10,-1600*kilojoule_per_mole))
+    integrator.addIntegrator(LangevinMiddleIntegrator(275*kelvin, 1/picosecond, 2*femtoseconds))
+    integrator.addIntegrator(VerletIntegrator(2*femtoseconds))
+    integrator.addIntegrator(AMDIntegrator(2*femtoseconds,3,-1700*kilojoule_per_mole))
     
     print("Define simulation system...")
     #  Define the simulation object.
@@ -197,7 +200,7 @@ def classic_md(SIMULATION,INTEGRATOR) :
     INTEGRATOR.setCurrentIntegrator(1)
     
     #  Run the simulation.
-    SIMULATION.step(500000)
+    SIMULATION.step(400000)
     
     return SIMULATION
 
@@ -238,6 +241,6 @@ if __name__ == "__main__" :
     SIMULATION = NVT_equilibration(SIMULATION,INTEGRATOR)
     SIMULATION, SYSTEM = NPT_equilibration(SIMULATION, INTEGRATOR, SYSTEM)
     SIMULATION = classic_md(SIMULATION,INTEGRATOR)
-    SIMULATION = accelerated_md(SIMULATION, INTEGRATOR)
+   # SIMULATION = accelerated_md(SIMULATION, INTEGRATOR)
 
     print("######### MD IS DONE #########")
